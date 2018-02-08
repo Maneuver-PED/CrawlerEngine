@@ -7,47 +7,43 @@ data_dir = '../data/'
 data_file = "data_v2.json"
 data = json.load(open(data_file))
 
-print "Loaded data from : ", data_file
+print("Loaded data from : ", data_file)
 # print data
 
-# print data['config']['regions']
+# print (data['config']['regions'])
+flat_json = {}
 
-flattened = []
 for r in data['config']['regions']:
-    flattene_data = {}
-    print "Region: {}".format(r['region'])
-    flattened.append(flattene_data)
-    flattene_data['region'] = r['region']
-    instance_types = []
-    for t in r['instanceTypes']:
-        instance_type = {}
-        print "#####" * 100
-        print "Type: {}".format(t['type'])
-        instance_type['type'] = t['type']
-        list_meta = []
-        for f in t['sizes']:
-            meta = {}
-            print "-----" * 100
-            print "Flavor: {}".format(f['size'])
-            meta['flavour'] = f['size']
-            print "Memory: {}".format(f['memoryGiB'])
-            meta['memory'] = f['memoryGiB']
-            print "vCPU: {}".format(f['vCPU'])
-            meta['vCPU'] = f['vCPU']
-            print "ECU: {}".format(f['ECU'])
-            meta['ECU'] = f['ECU']
-            print "OS: {}".format(f['valueColumns'][0]['name'])
-            meta['OS'] = f['valueColumns'][0]['name']
-            print "Price: {}".format(f['valueColumns'][0]['prices'])
-            meta['price'] = f['valueColumns'][0]['prices']
-            print "Storage: {}".format(f['storageGB'])
-            meta['storageGB'] = f['storageGB']
-            list_meta.append(meta)
-        # instance_type['meta'] = list_meta
-        flattene_data['meta'] = list_meta
-        flattened.append(flattene_data)
+    flavours = []
+    flat_json['region'] = r['region']
+    # print r
+    print(r['region'])
+    # print r['instanceTypes']
+    for l in r['instanceTypes']:
+        print(l['sizes'])
+        for el in l['sizes']:
+            renc = {}
+            renc['memoryGiB'] = float(el['memoryGiB'])
+            renc['vCPU'] = float(el['vCPU'])
+            renc['ECU'] = el['ECU']
+            renc['cost'] = float(el['valueColumns'][0]['prices']['USD'])
+            renc['OS'] = el['valueColumns'][0]['name']
+            renc['storageGB'] = el['storageGB']
+            renc['flavour'] = el['size']
+
+            print(el)
+            flavours.append(renc)
+    flat_json[r['region']] = flavours
 
 
-    # print "Flavores: {}".format(r['instanceTypes'])
-print flattened
+print (flat_json)
+# with open('result.json', 'w') as fp:
+#     json.dump(flat_json, fp)
+
+# for k, v in flat_json.iteritems():
+#     print k
+#     print k['region']
+
+
+
 
