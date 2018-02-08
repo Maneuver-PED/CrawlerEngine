@@ -349,13 +349,21 @@ class OntologyEngine:
     def get_entitites(self):
         return self.conto.individuals()
 
-    def load(self):
+    def load_ontology(self, generate=True):
+
         self.conto = get_ontology(self.iri)
+        if generate:
+            self.generate()
+            return 0
         try:
+            print("Trying to load ... ")
             self.conto.load()
+            print("Loaded")
+            return 0
         except Exception as inst:
             print("Error while loading ontology from {} with {} and {}".format(self.iri, type(inst), inst.args))
             self.generate()
+            return 1
 
     def get_flavours(self):
         return self.conto.search(is_a=self.conto.Virtual_Machine_Flavor)
@@ -368,7 +376,7 @@ class OntologyEngine:
             sync_reasoner()
 
     def q(self):
-        return self.conto.search(hasCurrency="*")
+        return self.conto.search(hasCPUCount=1.0, hasMemoryCount=2.0)
 
     def sync(self, data):
         for k, v in data.items():
@@ -399,8 +407,11 @@ class OntologyEngine:
     def dump(self):
         self.conto.save(file="Generated.owl", format="rdfxml")
 
+
+print("Staring ontology engine")
 test = OntologyEngine()
-print(test.load())
+
+print(test.load_ontology())
 print(test.get_iri())
 
 print("Classes in ontology: ")
@@ -426,6 +437,7 @@ print("Regions: ")
 print(list(test.get_regions()))
 
 
-test.reasoner()
+# test.reasoner()
 print(test.q())
-test.dump()
+print(len(list(test.q())))
+# test.dump()
