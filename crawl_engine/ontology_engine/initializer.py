@@ -187,6 +187,107 @@ with conto:
     class VPN(Data_Protection):
         pass
 
+    class Software(NonFunctional):
+        pass
+
+    class Applications(Software):
+        pass
+
+    class Application_Support(Applications):
+        pass
+
+    # Create object properties
+
+    class contains(ObjectProperty):
+        pass
+
+    class has(ObjectProperty):
+        pass
+
+    class hasConnection(has):
+        range = [Connection]
+
+    class hasCPU(has):
+        range = [aCPU]
+
+    class hasCurrency(has):
+        range = [Currency]
+
+    class hasMemory(has):
+        range = [Memory]
+
+    class hasOSType(has):
+        range = [OS_Type]
+        domain = [Operating_System]
+
+    class hasService(has):
+        range = [Service_Type]
+
+    class hasSoftware(has):
+        range = [Software]
+
+    class hasStorage(has):
+        range = [aStorage]
+
+    class includes(ObjectProperty):
+        pass
+
+    class includesComponent(includes):
+        range = [Component_Type]
+        domain = [Component]
+
+    class includesServices(includes):
+        domain = [Service_Type]
+        range = [Dev_Ops, Multimedia_Production, Artificial_Intelligence, Security, Compliance_Security,
+                 Monitoring, Persistent_Storage, Bussiness, Machine_Learning]
+
+    class inRegion(ObjectProperty):
+        domain = [Region]
+        range = [Region]
+
+    class providedBy(ObjectProperty):
+        pass
+
+    class provides(ObjectProperty):
+        domain = [Provider]
+        range = [Application_Support, Monitoring, Uptime]
+
+    class requires(ObjectProperty):
+        pass
+
+    # Create data properties
+
+    class hasCPUCount(DataProperty):
+        range = [float]
+
+    class hasMemoryCount(DataProperty):
+        range = [float]
+
+    class hasPrice(DataProperty):
+        range = [float]
+
+    class hasValue(DataProperty):
+        domain = [Budget]
+
+    # Add entities
+
+    ecpu = aCPU("CPU")
+    egpgpu = aCPU("GPGPU")
+
+    esingapore = Asia_Pacific("Singapore")
+    emumbai = Asia_Pacific("Mumbai")
+    etokyo = Asia_Pacific("Tokyo")
+    eseoul = Asia_Pacific("Seoul")
+    esidney = Asia_Pacific("Sydney")
+
+    
+
 
 print("Classes in ontology: ")
 print(list(conto.classes()))
+
+print("Object Properties: ")
+print(list(conto.object_properties()))
+
+print("Data Properties: ")
+print(list(conto.data_properties()))
