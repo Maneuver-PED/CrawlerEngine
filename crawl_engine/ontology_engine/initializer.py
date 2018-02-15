@@ -1,27 +1,17 @@
-from owlready2 import *
 import json
+
+from owlready2 import *
+
+from utils.eq import eq_aws, eq_OS, eq_google
+from utils.utils import parse_a_dtype, parse_g_name
 
 
 class OntologyEngine:
     def __init__(self, iri="http://maneuver.org/coud_gen.owl"):
         self.iri = iri
         self.conto = None
-        self.eq_aws = {"us-east-2":	"Ohio",
-                       "us-east-1":	"NVirginia",
-                       "us-west-1":	"Northern_California",
-                       "us-west-2":	"Oregon",
-                       "ap-south-1":	"Mumbai",
-                       "ap-northeast-2":	"Seoul",
-                       "ap-southeast-1": "Singapore",
-                       "ap-southeast-2":	"Sydney",
-                       "ap-northeast-1":	"Tokyo",
-                       "ca-central-1":	"Canada",
-                       "cn-north-1":	"Beijing",
-                       "eu-central-1":	"Frankfurt",
-                       "eu-west-1":	"Ireland",
-                       "eu-west-2":	"London",
-                       "eu-west-3":	"Paris",
-                       "sa-east-1":	"Sao_Paulo"}
+        self.eq_aws = eq_aws
+        self.eq_google = eq_google
 
     def get_iri(self):
         return self.conto.base_iri
@@ -296,18 +286,17 @@ class OntologyEngine:
             # Add entities
             ecpu = aCPU("CPU")
             egpgpu = aCPU("GPGPU")
+            ehdd = aStorage("HDD")
+            essd = aStorage("SSD")
+
+            edollar = Currency("US_Dollar")
+            eeuro = Currency("Euro")
 
             esingapore = Asia_Pacific("Singapore")
             emumbai = Asia_Pacific("Mumbai")
             etokyo = Asia_Pacific("Tokyo")
             eseoul = Asia_Pacific("Seoul")
             esidney = Asia_Pacific("Sydney")
-
-            ehdd = aStorage("HDD")
-            essd = aStorage("SSD")
-
-            edollar = Currency("US_Dollar")
-            eeuro = Currency("Euro")
 
             elondon = Europe("London")
             eireland = Europe("Ireland")
@@ -361,7 +350,7 @@ class OntologyEngine:
             print("Loaded")
             return 0
         except Exception as inst:
-            print("Error while loading ontology from {} with {} and {}".format(self.iri, type(inst), inst.args))
+            print("Failed to  load ontology from {} with {} and {}".format(self.iri, type(inst), inst.args))
             self.generate()
             return 1
 
@@ -378,34 +367,70 @@ class OntologyEngine:
     def q(self):
         return self.conto.search(hasCPUCount=1.0, hasMemoryCount=2.0)
 
-    def sync(self, data):
-        for k, v in data.items():
-            if k in self.eq_aws:
-                for f in v:
-                    print(f)
-                    str_new_inst = "{}_{}_{}".format(f['flavour'].replace(".", ""), self.eq_aws[k], f['OS'])
-                    print("Creating new entity {} ...".format(str_new_inst))
-                    new_inst = self.conto.Virtual_Machine_Flavor(str_new_inst)
+    def sync(self, data, provider):
+        if provider == 'amazon':
+            print("Staring amazon entity syncronization ... ")
+            try:
+                for k, v in data.items():
+                    if k in self.eq_aws:
+                        for f in v:
+                            print(f)
+                            str_new_inst = "{}_{}_{}".format(f['flavour'].replace(".", ""), self.eq_aws[k], f['OS'])
+                            print("Creating new entity {} ...".format(str_new_inst))
+                            new_inst = self.conto.Virtual_Machine_Flavor(str_new_inst)
 
-                    print("Adding object properties ...")
-                    new_inst.hasOSType = [self.conto.OS_Type("Linux")]
-                    new_inst.hasStorage = [self.conto.aStorage("HDD")]
-                    new_inst.inRegion = [self.conto.Region(self.eq_aws[k])]
-                    new_inst.hasMemory = [self.conto.Memory("RAM")]
-                    new_inst.hasCurrency = [self.conto.Currency("US_Dollar")]
-                    new_inst.hasCPU = [self.conto.aCPU("CPU")]
-                    new_inst.providedBy = [self.conto.Provider("Amazon")]
+                            print("Adding object properties ...")
+                            new_inst.hasOSType = [self.conto.OS_Type(eq_OS[f['OS']])]
+                            # new_inst.hasStorage = [self.conto.aStorage("HDD")]
+                            new_inst.hasStorage = [self.conto.aStorage(parse_a_dtype(f['storageGB']))]
+                            new_inst.inRegion = [self.conto.Region(self.eq_aws[k])]
+                            new_inst.hasMemory = [self.conto.Memory("RAM")]
+                            new_inst.hasCurrency = [self.conto.Currency("US_Dollar")]
+                            new_inst.hasCPU = [self.conto.aCPU("CPU")]
+                            new_inst.providedBy = [self.conto.Provider("Amazon")]
 
-                    print("Adding data properties ...")
-                    new_inst.hasPrice = [float(f["cost"])]
-                    new_inst.hasCPUCount = [float(f["vCPU"])]
-                    new_inst.hasMemoryCount = [float(f["memoryGiB"])]
+                            print("Adding data properties ...")
+                            new_inst.hasPrice = [float(f["cost"])]
+                            new_inst.hasCPUCount = [float(f["vCPU"])]
+                            new_inst.hasMemoryCount = [float(f["memoryGiB"])]
 
-                    print("Entity {} created!".format(str_new_inst))
-                    # new_entity = onto.Virtual_Machine_Flavor("test")
+                            print("Entity {} created!".format(str_new_inst))
+                            # new_entity = onto.Virtual_Machine_Flavor("test")
+            except Exception as inst:
+                print("Failed to syncronize amazon entities with {} and {}".format(type(inst), inst.args))
+                sys.exit(1)
+            print("Syncronization complete. ")
+        if provider == 'google':
+            print("Staring google entity syncronization ... ")
+            for el in list(data["gcp_price_list"].keys()):
+                if "VMIMAGE" in el:
+                    for k, v in self.eq_google.items():
+                        print(el)
+                        str_new_inst = "{}_{}_{}".format(parse_g_name(el), v, "linux")
+                        print("Creating new entity {} ...".format(str_new_inst))
+                        new_inst = self.conto.Virtual_Machine_Flavor(str_new_inst)
+
+                        print("Adding object properties ...")
+                        new_inst.hasOSType = [self.conto.OS_Type("Linux")]   # todo: modify to add more than linux
+                        new_inst.hasStorage = [self.conto.aStorage("HDD")]   # todo: modify to add ssd as well as hdd
+                        new_inst.inRegion = [self.conto.Region(v)]
+                        new_inst.hasMemory = [self.conto.Memory("RAM")]
+                        new_inst.hasCurrency = [self.conto.Currency("US_Dollar")]
+                        new_inst.hasCPU = [self.conto.aCPU("CPU")]
+                        new_inst.providedBy = [self.conto.Provider("Google")]
+
+                        print("Adding data properties ...")
+                        new_inst.hasPrice = [float(data["gcp_price_list"][el][k])]
+                        if "shared" == data["gcp_price_list"][el]["cores"]:
+                            new_inst.hasCPUCount = [float(0)]
+                        else:
+                            new_inst.hasCPUCount = [float(data["gcp_price_list"][el]["cores"])]
+                        new_inst.hasMemoryCount = [float(data["gcp_price_list"][el]["memory"])]
+
+                        print("Entity {} created!".format(str_new_inst))
 
     def dump(self):
-        self.conto.save(file="Generated.owl", format="rdfxml")
+        self.conto.save(file="Generated_2.owl", format="rdfxml")
 
 
 print("Staring ontology engine")
@@ -425,13 +450,17 @@ print(list(test.get_data_properties()))
 
 print("Sync ontology with new crawled data")
 data = json.load(open('result.json'))
-test.sync(data)
+test.sync(data, 'amazon')
+
+data2 = json.load(open('data_google.json'))
+test.sync(data2, 'google')
 
 print("Entities: ")
 print(list(test.get_entitites()))
 
-print("Flabours: ")
+print("Flavours: ")
 print(list(test.get_flavours()))
+print("Total Entitites {}".format(len(list(test.get_flavours()))))
 
 print("Regions: ")
 print(list(test.get_regions()))
@@ -440,4 +469,4 @@ print(list(test.get_regions()))
 # test.reasoner()
 print(test.q())
 print(len(list(test.q())))
-# test.dump()
+test.dump()
