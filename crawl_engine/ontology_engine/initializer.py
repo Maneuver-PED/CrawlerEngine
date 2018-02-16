@@ -271,16 +271,16 @@ class OntologyEngine:
 
             # Create data properties
 
-            class hasCPUCount(DataProperty):
+            class CPUCount(DataProperty):
                 range = [float]
 
-            class hasMemoryCount(DataProperty):
+            class MemoryCount(DataProperty):
                 range = [float]
 
-            class hasPrice(DataProperty):
+            class Price(DataProperty):
                 range = [float]
 
-            class hasValue(DataProperty):
+            class Value(DataProperty):
                 domain = [Budget]
 
             # Add entities
@@ -462,7 +462,7 @@ print("Flavours: ")
 print(list(test.get_flavours()))
 print("Total Entitites {}".format(len(list(test.get_flavours()))))
 
-print("Regions: ")
+print("Regions: ")     #  todo: check duplicate region generation
 print(list(test.get_regions()))
 
 
