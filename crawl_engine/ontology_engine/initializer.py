@@ -422,7 +422,7 @@ class OntologyEngine:
                         print("Adding data properties ...")
                         new_inst.hasPrice = [float(data["gcp_price_list"][el][k])]
                         if "shared" == data["gcp_price_list"][el]["cores"]:
-                            new_inst.hasCPUCount = [float(0)]
+                            new_inst.hasCPUCount = [float(0.5)]
                         else:
                             new_inst.hasCPUCount = [float(data["gcp_price_list"][el]["cores"])]
                         new_inst.hasMemoryCount = [float(data["gcp_price_list"][el]["memory"])]
