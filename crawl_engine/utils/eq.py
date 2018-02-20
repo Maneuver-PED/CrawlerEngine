@@ -43,3 +43,34 @@ eq_OS = {
     "linux": "Linux",
 
 }
+
+# "ML_AI": ['AmazonLex', 'AmazonRekognition', 'AmazonPolly', 'AmazonML'],
+# "Analytics": ['AmazonAthena', 'AmazonCloudSearch', 'AmazonKinesis', 'AmazonKinesisAnalytics', 'AmazonQuickSight',
+# 'AWSGlue', 'ElasticMapReduce', 'AmazonRedshift', 'datapipeline'],
+
+
+eq_services = {
+    "Compute": ['AmazonEC2', 'AmazonLightsail', 'AWSLambda' 'AmazonECR' 'AmazonSWF'],
+    "Storage": ['AmazonS3', 'AmazonEFS', 'AWSStorageGateway', 'IngestionServiceSnowball', 'SnowballExtraDays',
+                'AmazonGlacier', 'AmazonES'],
+    "DataBases": ['AmazonDynamoDB', 'AmazonDAX', 'AmazonRedshift', 'AWSDatabaseMigrationSvc', 'AmazonRDS',
+                  'AmazonElastiCache', 'AmazonSimpleDB'],
+    "Networking": ['AmazonVPC', 'AmazonRoute53', 'AWSDirectConnect', 'AmazonCloudFront', 'AmazonApiGateway'],
+    "Management_Tools": ['AmazonCloudWatch', 'AWSConfig', 'AWSCloudTrail', 'OpsWorks', 'AWSServiceCatalog',
+                         'AmazonWAM', 'awskms', 'AWSBudgets', 'AWSCostExplorer'],
+    "Dev": ['CodeBuild', 'AWSCodePipeline', 'AWSXRay', 'AWSCodeCommit', 'AWSCodeDeploy', 'CodeBuild', 'AmazonGameLift'],
+    "Security": ['AmazonCognito', 'AmazonCognitoSync', 'AmazonGuardDuty', 'AmazonInspector', 'AWSDirectoryService',
+                 'awswaf', 'AmazonCloudDirectory', 'AWSDirectConnect', 'CloudHSM', 'AWSShield'],
+    "ML_AI": ['AmazonLex', 'AmazonRekognition', 'AmazonPolly', 'AmazonML', 'AmazonAthena', 'AmazonCloudSearch',
+              'AmazonKinesis', 'AmazonKinesisAnalytics', 'AmazonQuickSight', 'AWSGlue', 'ElasticMapReduce',
+              'AmazonRedshift', 'datapipeline', 'mobileanalytics'],
+    "IoT": ['AWSIoT', 'AWSGreengrass'],
+    "Integration": ['AmazonSNS', 'AWSQueueService', 'AmazonMQ', 'AmazonKinesisFirehose', 'IngestionService'],
+    "Migration": ['AWSDatabaseMigrationSvc', 'IngestionServiceSnowball'],
+    "Mobile": ['AmazonPinpoint', 'AWSDeviceFarm', 'AmazonApiGateway', 'mobileanalytics'],
+    "Media": ['AmazonETS', 'AWSElementalMediaConvert', 'AWSElementalMediaPackage', 'AWSElementalMediaTailor',
+              'AWSElementalMediaLive', 'AWSElementalMediaStore'],
+    "Bussiness_Productivity": ['AmazonChime', 'AmazonWorkMail', 'AmazonWorkDocs', 'AmazonSES', 'AmazonConnect',
+                               'AmazonChimeDialin', 'AWSSupportBusiness', 'AWSSupportEnterprise'],
+    "App_Streaming": ['AmazonWorkSpaces', 'AmazonWAM']
+}
