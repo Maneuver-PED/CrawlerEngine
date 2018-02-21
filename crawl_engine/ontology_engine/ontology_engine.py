@@ -16,10 +16,11 @@ class OntologyEngine:
     def get_iri(self):
         return self.conto.base_iri
 
-    def generate(self):
+    def generate(self):   # todo add anotations
         with self.conto:
             class Application(Thing):
                 pass
+            # Application.comment = ["cucu_bvau"]
 
             class Component(Application):
                 pass
@@ -360,6 +361,9 @@ class OntologyEngine:
     def get_regions(self):
         return self.conto.search(is_a=self.conto.Region)
 
+    def get_services(self):
+        return self.conto.search(is_a=self.conto.Service_Type)
+
     def reasoner(self):
         with self.conto:
             sync_reasoner()
@@ -390,9 +394,9 @@ class OntologyEngine:
                             new_inst.providedBy = [self.conto.Provider("Amazon")]
 
                             print("Adding data properties ...")
-                            new_inst.hasPrice = [float(f["cost"])]
-                            new_inst.hasCPUCount = [float(f["vCPU"])]
-                            new_inst.hasMemoryCount = [float(f["memoryGiB"])]
+                            new_inst.Price = [float(f["cost"])]
+                            new_inst.CPUCount = [float(f["vCPU"])]
+                            new_inst.MemoryCount = [float(f["memoryGiB"])]
 
                             print("Entity {} created!".format(str_new_inst))
                             # new_entity = onto.Virtual_Machine_Flavor("test")
@@ -420,17 +424,17 @@ class OntologyEngine:
                         new_inst.providedBy = [self.conto.Provider("Google")]
 
                         print("Adding data properties ...")
-                        new_inst.hasPrice = [float(data["gcp_price_list"][el][k])]
+                        new_inst.Price = [float(data["gcp_price_list"][el][k])]
                         if "shared" == data["gcp_price_list"][el]["cores"]:
-                            new_inst.hasCPUCount = [float(0.5)]
+                            new_inst.CPUCount = [float(0.5)]
                         else:
-                            new_inst.hasCPUCount = [float(data["gcp_price_list"][el]["cores"])]
-                        new_inst.hasMemoryCount = [float(data["gcp_price_list"][el]["memory"])]
+                            new_inst.CPUCount = [float(data["gcp_price_list"][el]["cores"])]
+                        new_inst.MemoryCount = [float(data["gcp_price_list"][el]["memory"])]
 
                         print("Entity {} created!".format(str_new_inst))
 
     def dump(self):
-        self.conto.save(file="Generated_2.owl", format="rdfxml")
+        self.conto.save(file="Generated_3.owl", format="rdfxml")
 
 
 print("Staring ontology engine")
@@ -465,8 +469,10 @@ print("Total Entitites {}".format(len(list(test.get_flavours()))))
 print("Regions: ")     #  todo: check duplicate region generation
 print(list(test.get_regions()))
 
+print("Service_types: ")
+print(list(test.get_services()))
 
 # test.reasoner()
 print(test.q())
 print(len(list(test.q())))
-test.dump()
+# test.dump()
