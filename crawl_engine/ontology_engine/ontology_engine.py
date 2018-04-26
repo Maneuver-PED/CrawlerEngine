@@ -2,7 +2,7 @@ import json
 
 from owlready2 import *
 
-from utils.eq import eq_aws, eq_OS, eq_google
+from utils.eq import eq_aws, eq_OS, eq_google, eq_services
 from utils.utils import parse_a_dtype, parse_g_name
 
 
@@ -127,79 +127,67 @@ class OntologyEngine:
             class South_America(Region):
                 pass
 
+            # Service Type Classes
             class Service_Type(NonFunctional):
                 pass
 
-            class Artificial_Intelligence(Service_Type):
+            class Compute(Service_Type):
+                pass
+            Compute.comment = ["Contains all VM flavours for all supported providers."]
+
+            class Storage(Service_Type):
+                pass
+            Storage.comment = ["Contains all persistent storage services for all providers."]
+
+            class DataBases(Service_Type):
+                pass
+            DataBases.comment = ["Contains all database services for all providers."]
+
+            class Networking(Service_Type):
+                pass
+            Networking.comment = ["Contains all network related services for all providers."]
+
+            class Management_Tools(Service_Type):
+                pass
+            Management_Tools.comment = ["Contains all management related services for all providers."]
+
+            class Dev(Service_Type):
+                pass
+            Dev.comment = ["Contains all development related services for all providers."]
+
+            class Security (Service_Type):
+                pass
+            Security.comment = ["Contains all security related services for all providers."]
+
+            class ML_AI(Service_Type):
+                pass
+            ML_AI.comment = ["Contains all artificial intelligence and machine "
+                             "learning related services for all providers."]
+
+            class IoT (Service_Type):
+                pass
+            IoT.comment = ["Contains all Internet of Things related services for all providers."]
+
+            class Integration(Service_Type):
+                pass
+            Integration.comment = ["Contains all integration related services for all providers."]
+
+            class Migration(Service_Type):
+                pass
+            Migration.comment = ["Contains all migration related services for all providers."]
+
+            class Mobile(Service_Type):
+                pass
+            Mobile.comment = ["Contains all mobile related services for all providers."]
+
+            class Media (Service_Type):
+                pass
+            Media.comment = ["Contains all multi media related services for all providers."]
+
+            class Bussiness_Productivity(Service_Type):
                 pass
 
-            class Bussiness(Service_Type):
-                pass
-
-            class Management(Bussiness):
-                pass
-
-            class Workflow(Bussiness):
-                pass
-
-            class Compliance_Security(Service_Type):
-                pass
-
-            class Dev_Ops(Service_Type):
-                pass
-
-            class IDE(Dev_Ops):
-                pass
-
-            class Machine_Learning(Service_Type):
-                pass
-
-            class Monitoring(Service_Type):
-                pass
-
-            class Multimedia_Production(Service_Type):
-                pass
-
-            class Persistent_Storage(Service_Type):
-                pass
-
-            class Database(Persistent_Storage):
-                pass
-
-            class Security(Service_Type):
-                pass
-
-            class Back_up(Security):
-                pass
-
-            class Certification(Security):
-                pass
-
-            class Data_Management(Security):
-                pass
-
-            class Data_Destruction(Data_Management):
-                pass
-
-            class Data_Transfer(Data_Management):
-                pass
-
-            class Encryption(Data_Management):
-                pass
-
-            class Migration(Data_Management):
-                pass
-
-            class Reporting(Data_Management):
-                pass
-
-            class Data_Protection(Security):
-                pass
-
-            class Firewall(Data_Protection):
-                pass
-
-            class VPN(Data_Protection):
+            class App_Streaming(Service_Type):
                 pass
 
             class Software(NonFunctional):
@@ -253,8 +241,11 @@ class OntologyEngine:
 
             class includesServices(includes):
                 domain = [Service_Type]
-                range = [Dev_Ops, Multimedia_Production, Artificial_Intelligence, Security, Compliance_Security,
-                         Monitoring, Persistent_Storage, Bussiness, Machine_Learning]
+                range = [Compute, Storage, DataBases, Networking, Management_Tools, Dev, Security, ML_AI, IoT,
+                         Integration, Migration, Mobile, Media, Bussiness_Productivity, App_Streaming]
+
+            class isService(ObjectProperty):
+                pass
 
             class inRegion(ObjectProperty):
                 domain = [Region]
@@ -265,7 +256,7 @@ class OntologyEngine:
 
             class provides(ObjectProperty):
                 domain = [Provider]
-                range = [Application_Support, Monitoring, Uptime]
+                range = [Application_Support, Uptime]
 
             class requires(ObjectProperty):
                 pass
@@ -283,6 +274,62 @@ class OntologyEngine:
 
             class Value(DataProperty):
                 domain = [Budget]
+
+
+            # Services
+            # Add AWS services
+            for s in eq_services['supported_services']:
+                for k, v in eq_services.items():
+                    if k == 'supported_services':
+                        pass
+                    if s in v:
+                        if k == 'Compute':
+                            Compute(s)
+                            # com.append(s)
+                        elif k == 'Storage':
+                            Storage(s)
+                            # st.append(s)
+                        elif k == 'DataBases':
+                            DataBases(s)
+                            # db.append(s)
+                        elif k == 'Networking':
+                            Networking(s)
+                            # net.append(s)
+                        elif k == 'Management_Tools':
+                            Management_Tools(s)
+                            # mng.append(s)
+                        elif k == 'Dev':
+                            Dev(s)
+                            # dev.append(s)
+                        elif k == 'Security':
+                            Security(s)
+                            # sec.append(s)
+                        elif k == 'ML_AI':
+                            ML_AI(s)
+                            # ml.append(s)
+                        elif k == 'IoT':
+                            IoT(s)
+                            # iot.append(s)
+                        elif k == "Integration":
+                            Integration(s)
+                            # integ.append(s)
+                        elif k == "Migration":
+                            Migration(s)
+                            # mig.append(s)
+                        elif k == "Mobile":
+                            Mobile(s)
+                            # mob.append(s)
+                        elif k == "Media":
+                            Media(s)
+                            # med.append(s)
+                        elif k == "Bussiness_Productivity":
+                            Bussiness_Productivity(s)
+                            # bus.append(s)
+                        elif k == "App_Streaming":
+                            App_Streaming(s)
+                            # app.append(s)
+
+
 
             # Add entities
             ecpu = aCPU("CPU")
@@ -375,9 +422,16 @@ class OntologyEngine:
         if provider == 'amazon':
             print("Staring amazon entity syncronization ... ")
             try:
+                i = 0
+                stop = False
                 for k, v in data.items():
+                    if stop:
+                        break
                     if k in self.eq_aws:
                         for f in v:
+                            if i > 9:
+                                stop = True
+                                break
                             print(f)
                             str_new_inst = "{}_{}_{}".format(f['flavour'].replace(".", ""), self.eq_aws[k], f['OS'])
                             print("Creating new entity {} ...".format(str_new_inst))
@@ -400,15 +454,23 @@ class OntologyEngine:
 
                             print("Entity {} created!".format(str_new_inst))
                             # new_entity = onto.Virtual_Machine_Flavor("test")
+                            i += 1
             except Exception as inst:
                 print("Failed to syncronize amazon entities with {} and {}".format(type(inst), inst.args))
                 sys.exit(1)
             print("Syncronization complete. ")
         if provider == 'google':
             print("Staring google entity syncronization ... ")
+            i = 0
+            stop = False
             for el in list(data["gcp_price_list"].keys()):
+                if stop:
+                    break
                 if "VMIMAGE" in el:
                     for k, v in self.eq_google.items():
+                        if i > 9:
+                            stop = True
+                            break
                         print(el)
                         str_new_inst = "{}_{}_{}".format(parse_g_name(el), v, "linux")
                         print("Creating new entity {} ...".format(str_new_inst))
@@ -432,9 +494,10 @@ class OntologyEngine:
                         new_inst.MemoryCount = [float(data["gcp_price_list"][el]["memory"])]
 
                         print("Entity {} created!".format(str_new_inst))
+                        i += 1
 
     def dump(self):
-        self.conto.save(file="Generated_3.owl", format="rdfxml")
+        self.conto.save(file="Generated_7.owl", format="rdfxml")
 
 
 print("Staring ontology engine")
@@ -475,4 +538,4 @@ print(list(test.get_services()))
 # test.reasoner()
 print(test.q())
 print(len(list(test.q())))
-# test.dump()
+test.dump()
