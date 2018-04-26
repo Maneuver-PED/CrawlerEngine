@@ -177,6 +177,7 @@ class ESCore:
     def _compQuery(self, queryBody):
         final_resp = []
         respS = self._squery(queryBody=queryBody)
+        print("Query took: {}".format(respS['took']))
         final_resp = final_resp + respS['hits']['hits']
         scroll_id = respS['_scroll_id']
         total_length = math.ceil(respS['hits']['total'] / 10000)

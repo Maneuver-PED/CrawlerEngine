@@ -24,7 +24,6 @@ class QueryConstructor():
                     sstorage = int(v['storage']['ssd'])
                 else:
                     sstorage = int(v['storage']['hdd'])
-                    print(sstorage)
                 qstring = "memory:\"{}\" AND vcpu:\"{}\" AND storage:\"{}\"".format(int(v['memory']/1000), int(v['cpu']['cpu']), sstorage)
                 qslist[k] = qstring
                 # print(qstring)
