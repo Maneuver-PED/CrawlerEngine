@@ -53,6 +53,5 @@ for k, v in data.items():
             print("Entity {} created!".format(str_new_inst))
         # new_entity = onto.Virtual_Machine_Flavor("test")
 print(onto.search(is_a=onto.Virtual_Machine_Flavor))
-
 print("Saving ontology ...")
 onto.save(file="Test.owl", format="rdfxml")
