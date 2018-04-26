@@ -2,6 +2,7 @@ from datetime import datetime
 from elasticsearch import Elasticsearch
 from datetime import datetime
 from elasticsearch import Elasticsearch
+from escore.pyQueryConstructor import QueryConstructor
 import requests
 import os
 import sys, getopt
@@ -173,7 +174,7 @@ class ESCore:
             sys.exit(2)
         return res
 
-    def compQuery(self, queryBody):
+    def _compQuery(self, queryBody):
         final_resp = []
         respS = self._squery(queryBody=queryBody)
         final_resp = final_resp + respS['hits']['hits']
@@ -190,6 +191,16 @@ class ESCore:
                 filtered.append(el['_source'])
         print("Length of filtered response: {}".format(len(filtered)))
         return filtered
+
+    def recomQuery(self, opt_query):
+        newquery = QueryConstructor()
+        lq = newquery.ceQueryString(opt_query)
+        qresp = {}
+        for k, q in lq.items():
+            queryBody = newquery.cequery(q)
+            resp = self._compQuery(queryBody=queryBody)
+            qresp[k] = resp
+        return qresp
 
 
 if __name__ == "__main__":
