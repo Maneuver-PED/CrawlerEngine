@@ -39,7 +39,7 @@ class QueryConstructor():
                 ss = float(dp.split(":")[1].replace("\"", ""))
         cquery = Dict()
         cquery.size = size
-        cquery.query.bool.must.query_string.query = qstring
+        cquery.query.bool.must.query_string.query = "*"
         cquery.query.bool.filter = [{"range": {"vcpu": {"gte": sc, "lte": sc+msc}}},
                                     {"range": {"memory": {"gte": sm, "lte": sm+msm}}},
                                     {"range": {"storage": {"gte": ss, "lte": ss*mss}}}]
