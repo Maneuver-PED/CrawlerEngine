@@ -1,8 +1,10 @@
 import json
 from utils.eq import eq_services
-from escore import escore
+from utils.utils import parseStorage
+from escore.core import ESCore
 from escore.pyQueryConstructor import QueryConstructor
 import sys
+from tqdm import tqdm
 
 data = json.load(open('aws_services.json'))
 
@@ -195,7 +197,23 @@ for services in eq_services['supported_services']:
             print(v['attributes']['cacheMemorySizeGb'])  # todo: add as comment
         if 'memory' in v['attributes']:
             # print(v['attributes']['memory'])
-            tisd['memory'] = v['attributes']['memory']
+            memval = v['attributes']['memory']
+            if memval == "NA":
+                tisd['memory'] = float(-1)
+            elif "GB" in memval:
+                tisd['memory'] = parseStorage(memval)
+            # elif "1GB" in memval or "2GB" in memval or "0.5GB" in memval or "8GB" in memval:
+            #     print("Not handeled yet")   #  TODO: IMPORTANT
+            else:
+                try:
+                    if "," in memval:
+                        memValCast = float(memval.split(" ")[0].replace(",", "."))
+                    else:
+                        memValCast = float(memval.split(" ")[0])
+                    tisd['memory'] = memValCast  # cast to float
+                except:
+                    print("------>{}".format(v['attributes']['memory']))
+                    sys.exit(3)
         if 'standardStorageRetentionIncluded' in v['attributes']:
             print(v['attributes']['standardStorageRetentionIncluded'])  # todo: add as comment
         if 'operation' in v['attributes']:
@@ -297,7 +315,7 @@ for services in eq_services['supported_services']:
             print(v['attributes']['jobnshipp'])  # todo: add as comment
         if 'vcpu' in v['attributes']:
             # print(v['attributes']['vcpu'])
-            tisd['vcpu'] = v['attributes']['vcpu']
+            tisd['vcpu'] = float(v['attributes']['vcpu'])
         if 'accountAssistance' in v['attributes']:
             print(v['attributes']['accountAssistance'])  # todo: add as comment
         if 'instanceCapacityMedium' in v['attributes']:
@@ -476,7 +494,31 @@ for services in eq_services['supported_services']:
             print(v['attributes']['eventType'])  # todo: add as comment
         if 'storage' in v['attributes']:
             # print(v['attributes']['storage'])
-            tisd['storage'] = v['attributes']['storage']
+            storageVal = v['attributes']['storage']
+            if storageVal.split(" ")[0] == "EBS":
+                tisd['storage'] = float(-1)
+            elif storageVal == "N/A":
+                tisd['storage'] = float(-1)
+            elif storageVal == "NA":
+                tisd['storage'] = float(-1)
+            elif storageVal == "Included" or storageVal == "Additional":
+                tisd['storage'] = parseStorage(v['attributes']['maximumStorageVolume'])
+            elif 'SSD' in storageVal:
+                tisd['storage'] = parseStorage(v['attributes']['storage'].split(" ")[0])
+                tisd['storageType'] = 'SSD'
+            elif 'HDD' in storageVal:
+                tisd['storage'] = parseStorage(v['attributes']['storage'].split(" ")[0])
+                tisd['storageType'] = 'HDD'
+            elif "GB" in storageVal:
+                tisd['storage'] = parseStorage(storageVal)
+            elif "Root" in storageVal or "above" in storageVal:
+                print("Not handeled yet")  # TODO: IMPORTANT
+            else:
+                try:
+                    tisd['storage'] = float(v['attributes']['storage'].split(" ")[0])
+                except:
+                    print("---->{}".format(v['attributes']['storage']))
+                    sys.exit(1)
         if 'meterMode' in v['attributes']:
             print(v['attributes']['meterMode'])  # todo: add as comment
         if 'instanceCapacity32xlarge' in v['attributes']:
@@ -510,12 +552,15 @@ for services in eq_services['supported_services']:
 
 # print(len(indexable))
 
-testConnection = escore.ESCore('85.120.206.38')
+testConnection = ESCore('194.102.63.78')
 # print(testConnection.info())
 # print(testConnection.clusterHealth())
 
-# for d in indexable:
-#     testConnection.pushData('maneuver', doc_type='d', body=d)
+# for d in tqdm(indexable):
+#     print(d)
+
+for d in tqdm(indexable):
+    testConnection.pushData('maneuver', doc_type='d', body=d)
 #
 # queryBody = {
 #     "query": {
@@ -529,6 +574,6 @@ testConnection = escore.ESCore('85.120.206.38')
 #     }
 # }
 
-newquery = QueryConstructor()
-queryBody = newquery.cequery("memory:\"7*\" AND vcpu:\"4\"")
-print(testConnection.mquery(queryBody=queryBody))
+# newquery = QueryConstructor()
+# queryBody = newquery.cequery("memory:\"7*\" AND vcpu:\"4\"")
+# print(testConnection.mquery(queryBody=queryBody))

@@ -45,7 +45,32 @@ def parse_usg(usg):
     return "{}{}".format(usg.split(':')[1].split('.')[0], usg.split(':')[1].split('.')[1])
 
 
+def parseStorageType(ustr):
+    ustr = '0.16TB SSD'
+    ssize = parseStorage(ustr.split(" ")[0])
 
+
+def parseStorage(ustr):
+    ln = []
+    ls = []
+    for e in ustr:
+        try:
+            ln.append(int(e))
+        except:
+            ls.append(e)
+    finalNumber = ''
+    finalUnit = ''
+    for el in ln:
+        finalNumber += str(el)
+
+    for le in ls:
+        finalUnit += str(le)
+
+    finalfNumber = float(finalNumber)
+
+    if finalUnit == 'TB':
+        finalfNumber = finalfNumber * 1000.0
+    return finalfNumber
 
 if __name__ == "__main__":
     name = "CP-COMPUTEENGINE-VMIMAGE-N1-HIGHMEM-4"

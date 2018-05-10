@@ -29,10 +29,20 @@ class QueryConstructor():
                 # print(qstring)
         return qslist
 
-    def cequery(self, qstring, size=10000):
+    def cequery(self, qstring, size=10000, msc = 2.0, msm = 4.0, mss = 2.0):
+        for dp in qstring.split("AND"):
+            if "vcpu" == dp.split(":")[0].lstrip():
+                sc = float(dp.split(":")[1].replace("\"", ""))
+            if "memory" == dp.split(":")[0].lstrip():
+                sm = float(dp.split(":")[1].replace("\"", ""))
+            if "storage" == dp.split(":")[0].lstrip():
+                ss = float(dp.split(":")[1].replace("\"", ""))
         cquery = Dict()
         cquery.size = size
         cquery.query.bool.must.query_string.query = qstring
+        cquery.query.bool.filter = [{"range": {"vcpu": {"gte": sc, "lte": sc+msc}}},
+                                    {"range": {"memory": {"gte": sm, "lte": sm+msm}}},
+                                    {"range": {"storage": {"gte": ss, "lte": ss*mss}}}]
         cqueryd = cquery.to_dict()
         return cqueryd
 
