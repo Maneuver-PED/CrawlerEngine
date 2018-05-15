@@ -92,3 +92,7 @@ eq_services = {
                            'AmazonDAX', 'AmazonRoute53', 'AmazonGuardDuty', 'AWSShield', 'AWSCodeCommit',
                            'AmazonLightsail', 'AWSStorageGateway', 'AWSSupportBusiness']
 }
+
+validCfg = [(1, 1), (1, 2), (1, 4), (1, 8), (1, 16), (2, 1), (2, 2), (2, 4), (2, 8), (2, 16), (2, 32), (4, 4), (4, 8),
+            (4, 16), (4, 32), (8, 4), (8, 16), (8, 32), (8, 64), (16, 32), (16, 64), (32, 128), (64, 1), (64, 256),
+            (96, 384), (128, 1), (128, 2)]

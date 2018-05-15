@@ -45,7 +45,6 @@ class QueryConstructor():
         if ss != 0.0:
             filterl.append({"range": {"storage": {"gte": ss, "lte": ss * mss}}})
 
-
         cquery = Dict()
         cquery.size = size
         cquery.query.bool.must.query_string.query = "*"

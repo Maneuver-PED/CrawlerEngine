@@ -1,3 +1,8 @@
+import numpy as np
+import sys
+from scipy.spatial import distance
+import itertools
+from utils.eq import validCfg
 
 
 def parse_g_name(name):
@@ -10,6 +15,64 @@ def parse_a_dtype(desc):
         return "SSD"
     else:
         return "HDD"
+
+
+def parse_query_string(qstring):
+    sc = sm = ss = ''
+    for dp in qstring.split("AND"):
+        if "vcpu" == dp.split(":")[0].lstrip():
+            sc = float(dp.split(":")[1].replace("\"", ""))
+        if "memory" == dp.split(":")[0].lstrip():
+            sm = float(dp.split(":")[1].replace("\"", ""))
+        if "storage" == dp.split(":")[0].lstrip():
+            ss = float(dp.split(":")[1].replace("\"", ""))
+    return sc, sm, ss
+
+
+def closest_to(qstring, tresholds=None):
+    vCPU, memory, storage = parse_query_string(qstring)
+    if tresholds is None:
+        cl = [2, 4, 8,  16, 32, 48, 64, 96, 128]
+        ml = [1, 2, 4, 8, 16, 32, 64, 128, 256, 384]
+        sl = [50, 100, 200, 300, 400, 500, 1000, 2000, 5000, 10000]
+    else:
+        cl = tresholds['cl']
+        ml = tresholds['ml']
+        sl = tresholds['sl']
+    print("This is the memory ->{}".format(memory))
+    nvcpu = min(cl, key=lambda x: abs(x - vCPU))
+    nmemory = min(ml, key=lambda x: abs(x - memory))
+    # nstorage = min(sl, key=lambda x: abs(x - storage))
+    nstorage = 0.0
+    dcl = list(np.array(cl)[np.logical_and(np.array(cl) > vCPU, np.array(cl) <= cl[-1])])
+    dml = list(np.array(ml)[np.logical_and(np.array(ml) > memory, np.array(ml) <= ml[-1])])
+    # dsl = list(np.array(sl)[np.logical_and(np.array(sl) > storage, np.array(sl) <= sl[-1])])
+    if not dcl or not dml:
+        print("Empty list found!!")
+        sys.exit()
+    print("This is the valid ml values {} and this the new ajusted ones {}".format(ml, dml))
+    newtresholds = {'cl': dcl, 'ml': dml, 'sl': []}
+    nqstring = "memory:\"{}\" AND vcpu:\"{}\" AND storage:\"{}\"".format(nmemory, nvcpu, nstorage)
+    return nqstring, newtresholds
+
+
+def closest_cfg(qstring):
+    vCPU, memory, storage = parse_query_string(qstring)
+    cfg = [vCPU, memory]
+    cl = [2, 4, 8, 16, 32, 48, 64, 96, 128]
+    ml = [1, 2, 4, 8, 16, 32, 64, 128, 256, 384]
+    dcl = list(np.array(cl)[np.logical_and(np.array(cl) > vCPU, np.array(cl) <= cl[-1])])
+    dml = list(np.array(ml)[np.logical_and(np.array(ml) > memory, np.array(ml) <= ml[-1])])
+    if not dcl or not dml:
+        print("Empty list found for {}!!".format(qstring))
+        sys.exit()
+    closest_index = distance.cdist([cfg], validCfg).argmin()
+    return "memory:\"{}\" AND vcpu:\"{}\" AND storage:\"{}\"".format(validCfg[closest_index][1], validCfg[closest_index][0], 0)
+
+
+def man_qstring(vCPU, memory, storage):
+    return "memory:\"{}\" AND vcpu:\"{}\" AND storage:\"{}\"".format(memory, vCPU, storage)
+
 
 def parse_location(loc):
     ploc = loc.split("(")[-1].split(")")[0]
