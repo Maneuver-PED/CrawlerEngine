@@ -66,6 +66,10 @@ def closest_cfg(qstring):
     if not dcl or not dml:
         print("Empty list found for {}!!".format(qstring))
         sys.exit()
+    # lacfg = [dcl, dml]
+    # # ccfg = []
+    # # for l in itertools.product(*lacfg):
+    # #     ccfg.append(l)
     closest_index = distance.cdist([cfg], validCfg).argmin()
     return "memory:\"{}\" AND vcpu:\"{}\" AND storage:\"{}\"".format(validCfg[closest_index][1], validCfg[closest_index][0], 0)
 
@@ -108,11 +112,6 @@ def parse_usg(usg):
     return "{}{}".format(usg.split(':')[1].split('.')[0], usg.split(':')[1].split('.')[1])
 
 
-def parseStorageType(ustr):
-    ustr = '0.16TB SSD'
-    ssize = parseStorage(ustr.split(" ")[0])
-
-
 def parseStorage(ustr):
     ln = []
     ls = []
@@ -134,6 +133,7 @@ def parseStorage(ustr):
     if finalUnit == 'TB':
         finalfNumber = finalfNumber * 1000.0
     return finalfNumber
+
 
 if __name__ == "__main__":
     name = "CP-COMPUTEENGINE-VMIMAGE-N1-HIGHMEM-4"
@@ -160,3 +160,6 @@ if __name__ == "__main__":
         print(parse_cs(el))
 
     print(parse_usg(usg))
+
+    print(closest_cfg("memory:\"7\" AND vcpu:\"4\""))
+

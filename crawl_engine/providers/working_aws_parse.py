@@ -560,7 +560,7 @@ testConnection = ESCore('194.102.63.78')
 #     print(d)
 
 for d in tqdm(indexable):
-    testConnection.pushData('maneuver', doc_type='d', body=d)
+    testConnection.pushData('maneuver2', doc_type='d', body=d)
 #
 # queryBody = {
 #     "query": {

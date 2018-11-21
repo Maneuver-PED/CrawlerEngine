@@ -16,7 +16,7 @@ import time
 
 class ESCore:
     def __init__(self, esEndpoint,  esInstanceEndpoint=9200, index="maneuver"):
-        self.esInstance = Elasticsearch(esEndpoint)
+        self.esInstance = Elasticsearch(esEndpoint, timeout=60)
         self.esEndpoint = esEndpoint
         self.esInstanceEndpoint = esInstanceEndpoint
         self.myIndex = index
