@@ -68,7 +68,7 @@ class ESCore:
         except Exception as inst:
             # logger.error('[%s] : [ERROR] Exception has occured while connecting to ES with type %s at arguments %s', datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'), type(inst), inst.args)
             print("An exception has occured with type %s at arguments %s" %(type(inst), inst.args))
-            sys.exit(2)
+            # sys.exit(2)
         return res
 
     def createIndex(self, indexName):
@@ -139,9 +139,9 @@ class ESCore:
         res = self.esInstance.nodes.stats(request_timeout=15)
         return res
 
-    def pushData(self, anomalyIndex, doc_type, body):
+    def pushData(self, dindex, doc_type, body):
         try:
-            res = self.esInstance.index(index=anomalyIndex, doc_type=doc_type, body=body)
+            res = self.esInstance.index(index=dindex, doc_type=doc_type, body=body)
         except Exception as inst:
             # logger.error('[%s] : [ERROR] Exception has occured while pushing anomaly with type %s at arguments %s',
             #              datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'), type(inst), inst.args)
@@ -219,10 +219,10 @@ class ESCore:
 
 
 if __name__ == "__main__":
-    testConnection = ESCore('85.120.206.38')
+    testConnection = ESCore('194.102.63.78')
     print(testConnection.info())
     print(testConnection.clusterHealth())
     # print(testConnection.createIndex())
-    # print(testConnection.getIndex('maneuver'))
-    body = {'test': "ttt"}
-    testConnection.pushData('whatever', doc_type='d', body=body)
+    print(testConnection.getIndex('maneuver'))
+    # body = {'test': "ttt"}
+    # testConnection.pushData('whatever', doc_type='d', body=body)

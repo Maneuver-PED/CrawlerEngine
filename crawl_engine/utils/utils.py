@@ -2,7 +2,7 @@ import numpy as np
 import sys
 from scipy.spatial import distance
 import itertools
-from utils.eq import validCfg
+from utils.eq import *
 
 
 def parse_g_name(name):
