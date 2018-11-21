@@ -12,6 +12,7 @@ from flask import copy_current_request_context
 from flask_restplus import Api, Resource, fields
 from escore.core import ESCore
 from postprocessing.offer_formatter import offer_format
+import os
 
 app = Flask(__name__)
 api = Api(app, version='0.0.1', title='Offer Management System',
@@ -20,43 +21,59 @@ api = Api(app, version='0.0.1', title='Offer Management System',
 
 oms = api.namespace('OMS', description='OMS operations')
 
-todo = api.model('Todo', {
-    'id': fields.Integer(readOnly=True, description='The task unique identifier'),
-    'task': fields.String(required=True, description='The task details')
+cpu_model = api.model('OMS CPU', {
+    "type": fields.List(fields.String(required=False, default='CPU', description="List of compute types")),
+    "cpu": fields.Integer(required=False, default=1, description="Numper of vCPU cores"),
+    "gpu": fields.Integer(required=False, default=0, description="Number of GPUs")
 })
 
+storage_model = api.model('OMS Storage', {
+    "type": fields.List(fields.String(required=False, default='HDD', description="List of storage types")),
+    "hdd": fields.Integer(required=False, default=50, description="HDD storage"),
+    "ssd": fields.Integer(required=False, default=0, description="SSD Storage")
+})
 
-queryES = api.model('query details Model', {
-    'fname': fields.String(required=False, default="output", description='Name of output file.'),
-    'size': fields.Integer(required=True, default=500, description='Number of record'),
-    'ordering': fields.String(required=True, default='desc', description='Ordering of records'),
-    'queryString': fields.String(required=True, default="host:\"dice.cdh5.s4.internal\" AND serviceType:\"dfs\""
-                                 , description='ElasticSearc Query'),
-    'tstart': fields.Integer(required=True, default="now-1d", description='Start Date'),
-    'tstop': fields.Integer(required=False, default="None", description='Stop Date'),
-    'metrics': fields.List(fields.String(required=False, default=' ', description='Desired Metrics')),
-    'index': fields.String(required=False, default='logstash-*', description='Name of ES Core index')
+network_model = api.model('OMS Network', {
+    "connections": fields.Integer(required=False, default=20, description="Number of expected connections"),
+    "dataIn": fields.Integer(required=False, default=20, description="Estimated quantity of incoming data."),
+    "dataOut": fields.Integer(required=False, default=20, description="Estimated quantity of outgoing data.")
+})
+
+keywords_model = api.model('OMS Keywords', {
+    "keywords": fields.List(fields.String(required=False, default='Keyword1'))
+})
+
+model_ip = api.model('OMS IP', {
+    "publicIPs": fields.Integer(required=False, default=3, description="Estimated number of public IPs"),
+    "IPType": fields.String(required=False, default="IP4", description="IP version")
+})
+oms_req_model = api.model('OMS Req Model', {
+    "memory": fields.Integer(required=False, default=512, desciption="Estimated system memory"),
+    "cpu": fields.Nested(cpu_model),
+    "storage": fields.Nested(storage_model),
+    "network": fields.Nested(network_model),
+    "keywords": fields.Nested(keywords_model),
+    "operatingSystem": fields.List(fields.String(required=False, default="Linux", description="Operating system"))
+})
+
+oms_query_model = api.model("OMS Query Model", {
+    "tag": fields.Nested(oms_req_model),
+    "IP": fields.Nested(model_ip)
 })
 
 # Elasticsearch endpoint
 esendpoint = '194.102.63.78'
 
 
+# Folder locations
+ontology_dir = "{}ontology_engine/".format(os.path.join(os.path.dirname(os.path.abspath(__file__)))[:-4])
+
+
 @oms.route('/escore')
 class ESCoreVersion(Resource):
-    '''Shows a list of all todos, and lets you POST to add new tasks'''
-    # @oms.doc('list_todos')
-    # @oms.marshal_list_with(todo)
     def get(self):
-        '''List all tasks'''
-        return "something"
-
-    # @ns.doc('create_todo')
-    # @ns.expect(todo)
-    # @ns.marshal_with(todo, code=201)
-    # def post(self):
-    #     '''Create a new task'''
-    #     return "somethingelse"
+        '''List General Information related to ESCore'''
+        return "ToDo"
 
 
 @oms.route('/escore/info')
@@ -75,22 +92,40 @@ class ESCoreInfo(Resource):
         return response
 
 
-@oms.route('escore/index/<index>')
+@oms.route('/escore/index/<index>')
+@api.doc(params={'index': "Elasticsearch index"})
 class ESCoreIndex(Resource):
     def get(self, index):
-        return "Index {}".format(index)
+        '''ES index information'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Index {}".format(index)
 
     def delete(self, index):
-        return "Delete index {}".format(index)
+        '''Delete ES index'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Delete index {}".format(index)
 
     def post(self, index):
-        return "Open index {}".format(index)
+        '''Open ES Index'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Open index {}".format(index)
 
 
 @oms.route('/escore/index/<index>/settings')
+@api.doc(params={'index': "Elasticsearch index"})
 class ESCoreIndexSettings(Resource):
     def get(self, index):
-        return "Index settings {}".format(index)
+        '''Get ES Index settings'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Index settings {}".format(index)
 
 
 @oms.route('/escore/cluster/health')
@@ -176,7 +211,7 @@ class ESCoreNodeState(Resource):
 @oms.route('/query/<type>')
 @api.doc(params={'type': """Output type, can be "full" or "format"."""})
 class Query(Resource):
-    @api.expect(queryES)
+    @api.expect(oms_query_model)
     def post(self, type):
         '''OMS query'''
         type_list = ['full', 'format']
@@ -212,58 +247,98 @@ class Query(Resource):
 @oms.route('/crawler')
 class CrawlerInfo(Resource):
     def get(self):
-        return "Crawler Info"
+        '''Get general Crawler information'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Crawler Info"
 
 
 @oms.route('/crawler/status')
 class CrawlerStatus(Resource):
     def get(self):
-        return "Crawler Status"
+        '''Get Crawler status'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Crawler Status"
 
 
 @oms.route('/crawler/schedule')
 class CrawlerSchedule(Resource):
     def get(self):
-        return "Schedule"
+        '''Get Crawler schedule'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Schedule"
 
     def put(self):
-        return "New schedule"
+        '''Change Crawler schedule'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "New schedule"
 
 
 @oms.route('/crawler/seed')
 class CrawlerSeed(Resource):
     def get(self):
-        return "Current seed"
+        '''Get Crawler seed'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Current seed"
 
     def put(self):
-        return "New seed"
+        '''Modify Crawler seed'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "New seed"
 
 
 @oms.route('/crawler/start')
 class CrawlerStart(Resource):
     def post(self):
-        return "Start Crawling"
+        '''Start Crawler'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Start Crawling"
 
 
 @oms.route('/crawler/stop')
 class CrawlerStop(Resource):
     def post(self):
-        return "stop Crawler"
+        '''Stop Crawler'''
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "stop Crawler"
 
 
 @oms.route('/ontology')
 class Ontology(Resource):
     def get(self):
         '''Returns current working ontology'''
-        return "Current ontology"
+        ontology = os.path.join(ontology_dir, "Generated_7(sample).owl")
+        # return ontology_dir
+        with open(ontology) as f:
+            onto = f.read()
+        return Response(onto, mimetype='application/rdf+xml')
+        # return "Current ontology"
 
 
 @oms.route('/ontology/list')
 class OntologyList(Resource):
     def get(self):
         '''Returns list of available ontology versions'''
-        return "Ontology List"
+        response = jsonify({"warrning": "not allowed"})
+        response.status_code = 403
+        return response
+        # return "Ontology List"
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
