@@ -3,7 +3,7 @@ import sys
 from scipy.spatial import distance
 import itertools
 from utils.eq import *
-
+import os
 
 def parse_g_name(name):
     split_name = name.split("-")
@@ -134,6 +134,19 @@ def parseStorage(ustr):
         finalfNumber = finalfNumber * 1000.0
     return finalfNumber
 
+def checkPID(pid):
+    """
+    Check For the existence of a unix pid.
+    Sending signal 0 to a pid will raise an OSError exception if the pid is not running, and do nothing otherwise.
+    """
+    if pid == 0:	#If PID newly created return False
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
 
 if __name__ == "__main__":
     name = "CP-COMPUTEENGINE-VMIMAGE-N1-HIGHMEM-4"
