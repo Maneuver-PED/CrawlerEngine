@@ -24,16 +24,31 @@ class QueryConstructor():
                     sstorage = int(v['storage']['ssd'])
                 else:
                     sstorage = int(v['storage']['hdd'])
-                    print(sstorage)
                 qstring = "memory:\"{}\" AND vcpu:\"{}\" AND storage:\"{}\"".format(int(v['memory']/1000), int(v['cpu']['cpu']), sstorage)
                 qslist[k] = qstring
                 # print(qstring)
         return qslist
 
-    def cequery(self, qstring, size=10000):
+    def cequery(self, qstring, size=10000, msc=2.0, msm=4.0, mss=2.0):
+        for dp in qstring.split("AND"):
+            if "vcpu" == dp.split(":")[0].lstrip():
+                sc = float(dp.split(":")[1].replace("\"", ""))
+            if "memory" == dp.split(":")[0].lstrip():
+                sm = float(dp.split(":")[1].replace("\"", ""))
+            if "storage" == dp.split(":")[0].lstrip():
+                ss = float(dp.split(":")[1].replace("\"", ""))
+        filterl = []
+        if sc != 0.0:
+            filterl.append({"range": {"vcpu": {"gte": sc, "lte": sc + msc}}})
+        if sm != 0.0:
+            filterl.append({"range": {"memory": {"gte": sm, "lte": sm+msm}}})
+        if ss != 0.0:
+            filterl.append({"range": {"storage": {"gte": ss, "lte": ss * mss}}})
+
         cquery = Dict()
         cquery.size = size
-        cquery.query.bool.must.query_string.query = qstring
+        cquery.query.bool.must.query_string.query = "*"
+        cquery.query.bool.filter = filterl
         cqueryd = cquery.to_dict()
         return cqueryd
 
@@ -60,3 +75,4 @@ if __name__ == '__main__':
         "2": {"memory": 12000, "cpu": {"type": ["CPU"], "cpu": 6, "gpu": 0}, "storage": {"type": ["HDD"], "hdd": 0, "ssd": 0}, "network": {"connections": 60, "dataIn": 60, "dataOut": 60}, "keywords": ["storage application", "big data application"], "operatingSystem": ["Windows"]},
         "3": {"memory": 10000, "cpu": {"type": ["CPU"], "cpu": 6, "gpu": 0}, "storage": {"type": ["HDD"], "hdd": 0, "ssd": 0}, "network": {"connections": 60, "dataIn": 60, "dataOut": 60}, "keywords": ["storage application", "big data application"], "operatingSystem": ["Linux"]}}
     print(t.ceQueryString(test))
+    print(t.cequery(t.ceQueryString(test)["0"]))

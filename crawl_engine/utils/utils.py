@@ -1,4 +1,9 @@
-
+import numpy as np
+import sys
+from scipy.spatial import distance
+import itertools
+from utils.eq import *
+import os
 
 def parse_g_name(name):
     split_name = name.split("-")
@@ -10,6 +15,68 @@ def parse_a_dtype(desc):
         return "SSD"
     else:
         return "HDD"
+
+
+def parse_query_string(qstring):
+    sc = sm = ss = ''
+    for dp in qstring.split("AND"):
+        if "vcpu" == dp.split(":")[0].lstrip():
+            sc = float(dp.split(":")[1].replace("\"", ""))
+        if "memory" == dp.split(":")[0].lstrip():
+            sm = float(dp.split(":")[1].replace("\"", ""))
+        if "storage" == dp.split(":")[0].lstrip():
+            ss = float(dp.split(":")[1].replace("\"", ""))
+    return sc, sm, ss
+
+
+def closest_to(qstring, tresholds=None):
+    vCPU, memory, storage = parse_query_string(qstring)
+    if tresholds is None:
+        cl = [2, 4, 8,  16, 32, 48, 64, 96, 128]
+        ml = [1, 2, 4, 8, 16, 32, 64, 128, 256, 384]
+        sl = [50, 100, 200, 300, 400, 500, 1000, 2000, 5000, 10000]
+    else:
+        cl = tresholds['cl']
+        ml = tresholds['ml']
+        sl = tresholds['sl']
+    print("This is the memory ->{}".format(memory))
+    nvcpu = min(cl, key=lambda x: abs(x - vCPU))
+    nmemory = min(ml, key=lambda x: abs(x - memory))
+    # nstorage = min(sl, key=lambda x: abs(x - storage))
+    nstorage = 0.0
+    dcl = list(np.array(cl)[np.logical_and(np.array(cl) > vCPU, np.array(cl) <= cl[-1])])
+    dml = list(np.array(ml)[np.logical_and(np.array(ml) > memory, np.array(ml) <= ml[-1])])
+    # dsl = list(np.array(sl)[np.logical_and(np.array(sl) > storage, np.array(sl) <= sl[-1])])
+    if not dcl or not dml:
+        print("Empty list found!!")
+        sys.exit()
+    print("This is the valid ml values {} and this the new ajusted ones {}".format(ml, dml))
+    newtresholds = {'cl': dcl, 'ml': dml, 'sl': []}
+    nqstring = "memory:\"{}\" AND vcpu:\"{}\" AND storage:\"{}\"".format(nmemory, nvcpu, nstorage)
+    return nqstring, newtresholds
+
+
+def closest_cfg(qstring):
+    vCPU, memory, storage = parse_query_string(qstring)
+    cfg = [vCPU, memory]
+    cl = [2, 4, 8, 16, 32, 48, 64, 96, 128]
+    ml = [1, 2, 4, 8, 16, 32, 64, 128, 256, 384]
+    dcl = list(np.array(cl)[np.logical_and(np.array(cl) > vCPU, np.array(cl) <= cl[-1])])
+    dml = list(np.array(ml)[np.logical_and(np.array(ml) > memory, np.array(ml) <= ml[-1])])
+    if not dcl or not dml:
+        print("Empty list found for {}!!".format(qstring))
+        sys.exit()
+    # lacfg = [dcl, dml]
+    # # ccfg = []
+    # # for l in itertools.product(*lacfg):
+    # #     ccfg.append(l)
+    closest_index = distance.cdist([cfg], validCfg).argmin()
+    return "memory:\"{}\" AND vcpu:\"{}\" AND storage:\"{}\"".format(validCfg[closest_index][1], validCfg[closest_index][0], 0)
+
+
+def man_qstring(vCPU, memory, storage):
+    return "memory:\"{}\" AND vcpu:\"{}\" AND storage:\"{}\"".format(memory, vCPU, storage)
+
 
 def parse_location(loc):
     ploc = loc.split("(")[-1].split(")")[0]
@@ -45,7 +112,41 @@ def parse_usg(usg):
     return "{}{}".format(usg.split(':')[1].split('.')[0], usg.split(':')[1].split('.')[1])
 
 
+def parseStorage(ustr):
+    ln = []
+    ls = []
+    for e in ustr:
+        try:
+            ln.append(int(e))
+        except:
+            ls.append(e)
+    finalNumber = ''
+    finalUnit = ''
+    for el in ln:
+        finalNumber += str(el)
 
+    for le in ls:
+        finalUnit += str(le)
+
+    finalfNumber = float(finalNumber)
+
+    if finalUnit == 'TB':
+        finalfNumber = finalfNumber * 1000.0
+    return finalfNumber
+
+def checkPID(pid):
+    """
+    Check For the existence of a unix pid.
+    Sending signal 0 to a pid will raise an OSError exception if the pid is not running, and do nothing otherwise.
+    """
+    if pid == 0:	#If PID newly created return False
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
 
 if __name__ == "__main__":
     name = "CP-COMPUTEENGINE-VMIMAGE-N1-HIGHMEM-4"
@@ -72,3 +173,6 @@ if __name__ == "__main__":
         print(parse_cs(el))
 
     print(parse_usg(usg))
+
+    print(closest_cfg("memory:\"7\" AND vcpu:\"4\""))
+

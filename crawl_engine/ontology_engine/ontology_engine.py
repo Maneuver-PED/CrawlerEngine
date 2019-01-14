@@ -20,7 +20,7 @@ class OntologyEngine:
         with self.conto:
             class Application(Thing):
                 pass
-            # Application.comment = ["cucu_bvau"]
+            # Application.comment = ["User defined application"]
 
             class Component(Application):
                 pass
@@ -500,42 +500,43 @@ class OntologyEngine:
         self.conto.save(file="Generated_7.owl", format="rdfxml")
 
 
-print("Staring ontology engine")
-test = OntologyEngine()
+if __name__ == '__main__':
+    print("Staring ontology engine")
+    test = OntologyEngine()
 
-print(test.load_ontology())
-print(test.get_iri())
+    print(test.load_ontology())
+    print(test.get_iri())
 
-print("Classes in ontology: ")
-print(list(test.get_classes()))
+    print("Classes in ontology: ")
+    print(list(test.get_classes()))
 
-print("Object Properties: ")
-print(list(test.get_object_properties()))
+    print("Object Properties: ")
+    print(list(test.get_object_properties()))
 
-print("Data Properties: ")
-print(list(test.get_data_properties()))
+    print("Data Properties: ")
+    print(list(test.get_data_properties()))
 
-print("Sync ontology with new crawled data")
-data = json.load(open('result.json'))
-test.sync(data, 'amazon')
+    print("Sync ontology with new crawled data")
+    data = json.load(open('result.json'))
+    test.sync(data, 'amazon')
 
-data2 = json.load(open('data_google.json'))
-test.sync(data2, 'google')
+    data2 = json.load(open('data_google.json'))
+    test.sync(data2, 'google')
 
-print("Entities: ")
-print(list(test.get_entitites()))
+    print("Entities: ")
+    print(list(test.get_entitites()))
 
-print("Flavours: ")
-print(list(test.get_flavours()))
-print("Total Entitites {}".format(len(list(test.get_flavours()))))
+    print("Flavours: ")
+    print(list(test.get_flavours()))
+    print("Total Entitites {}".format(len(list(test.get_flavours()))))
 
-print("Regions: ")     #  todo: check duplicate region generation
-print(list(test.get_regions()))
+    print("Regions: ")     #  todo: check duplicate region generation
+    print(list(test.get_regions()))
 
-print("Service_types: ")
-print(list(test.get_services()))
+    print("Service_types: ")
+    print(list(test.get_services()))
 
-# test.reasoner()
-print(test.q())
-print(len(list(test.q())))
-test.dump()
+    # test.reasoner()
+    print(test.q())
+    print(len(list(test.q())))
+    test.dump()

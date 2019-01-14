@@ -3,6 +3,7 @@ from elasticsearch import Elasticsearch
 from datetime import datetime
 from elasticsearch import Elasticsearch
 from escore.pyQueryConstructor import QueryConstructor
+from utils.utils import parse_query_string, closest_cfg, man_qstring, closest_to
 import requests
 import os
 import sys, getopt
@@ -15,11 +16,12 @@ import time
 
 class ESCore:
     def __init__(self, esEndpoint,  esInstanceEndpoint=9200, index="maneuver"):
-        self.esInstance = Elasticsearch(esEndpoint)
+        self.esInstance = Elasticsearch(esEndpoint, timeout=60)
         self.esEndpoint = esEndpoint
         self.esInstanceEndpoint = esInstanceEndpoint
         self.myIndex = index
         self.adt_timeout = os.environ['ADP_TIMEOUT'] = os.getenv('ADP_TIMEOUT', str(60))
+        self.newquery = QueryConstructor()
 
     def query(self, queryBody, allm=True, dMetrics=[], debug=False):
         res = self.esInstance.search(index=self.myIndex, body=queryBody, request_timeout=230)
@@ -66,7 +68,7 @@ class ESCore:
         except Exception as inst:
             # logger.error('[%s] : [ERROR] Exception has occured while connecting to ES with type %s at arguments %s', datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'), type(inst), inst.args)
             print("An exception has occured with type %s at arguments %s" %(type(inst), inst.args))
-            sys.exit(2)
+            # sys.exit(2)
         return res
 
     def createIndex(self, indexName):
@@ -137,9 +139,9 @@ class ESCore:
         res = self.esInstance.nodes.stats(request_timeout=15)
         return res
 
-    def pushData(self, anomalyIndex, doc_type, body):
+    def pushData(self, dindex, doc_type, body):
         try:
-            res = self.esInstance.index(index=anomalyIndex, doc_type=doc_type, body=body)
+            res = self.esInstance.index(index=dindex, doc_type=doc_type, body=body)
         except Exception as inst:
             # logger.error('[%s] : [ERROR] Exception has occured while pushing anomaly with type %s at arguments %s',
             #              datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'), type(inst), inst.args)
@@ -177,6 +179,7 @@ class ESCore:
     def _compQuery(self, queryBody):
         final_resp = []
         respS = self._squery(queryBody=queryBody)
+        print("Query took: {}".format(respS['took']))
         final_resp = final_resp + respS['hits']['hits']
         scroll_id = respS['_scroll_id']
         total_length = math.ceil(respS['hits']['total'] / 10000)
@@ -192,22 +195,34 @@ class ESCore:
         print("Length of filtered response: {}".format(len(filtered)))
         return filtered
 
+    def _recurentQuery(self, q, treashold=None):
+        print("Calculating closest valid values ....")
+        qs = closest_cfg(q)
+        print(qs)
+        re_queryBody = self.newquery.cequery(qs)
+        re_resp = self._compQuery(queryBody=re_queryBody)
+        if len(re_resp) == 0:
+            return self._recurentQuery(qs)
+        else:
+            return re_resp
+
     def recomQuery(self, opt_query):
-        newquery = QueryConstructor()
-        lq = newquery.ceQueryString(opt_query)
+        lq = self.newquery.ceQueryString(opt_query)
         qresp = {}
         for k, q in lq.items():
-            queryBody = newquery.cequery(q)
+            queryBody = self.newquery.cequery(q)
             resp = self._compQuery(queryBody=queryBody)
+            if len(resp) == 0:
+                resp = self._recurentQuery(q)
             qresp[k] = resp
         return qresp
 
 
 if __name__ == "__main__":
-    testConnection = ESCore('85.120.206.38')
+    testConnection = ESCore('194.102.63.78')
     print(testConnection.info())
     print(testConnection.clusterHealth())
     # print(testConnection.createIndex())
-    # print(testConnection.getIndex('maneuver'))
-    body = {'test': "ttt"}
-    testConnection.pushData('whatever', doc_type='d', body=body)
+    print(testConnection.getIndex('maneuver'))
+    # body = {'test': "ttt"}
+    # testConnection.pushData('whatever', doc_type='d', body=body)
