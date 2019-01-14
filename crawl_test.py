@@ -47,7 +47,7 @@ def AmzonParser(url):
 
             return data
         except Exception as e:
-            print e
+            print (e)
 
 
 def ReadAsin():
@@ -65,7 +65,7 @@ def ReadAsin():
     extracted_data = []
     for i in AsinList:
         url = "http://www.amazon.com/dp/" + i
-        print "Processing: " + url
+        print ("Processing: " + url)
         extracted_data.append(AmzonParser(url))
         sleep(5)
     f = open('data.json', 'w')
